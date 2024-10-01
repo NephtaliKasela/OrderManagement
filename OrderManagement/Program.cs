@@ -20,7 +20,8 @@ builder.Services.AddHangfire(config =>
 builder.Services.AddHangfireServer();
 
 builder.Services.AddControllers()
-    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<OrderValidator>()); ;
+    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<OrderValidator>());
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -37,11 +38,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
-
-void Configure(IApplicationBuilder app, IBackgroundJobClient backgroundJobs)
-{
-    RecurringJob.AddOrUpdate<OrderServices>("ProcessOrders", x => x.UpdateOrderPriorities(), Cron.MinuteInterval(1));
 }
 
 app.UseHttpsRedirection();

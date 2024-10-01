@@ -16,13 +16,14 @@ namespace OrderManagement.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderServices _orderServices;
-        //private readonly IBackgroundJobClient _backgroundJobClient;
+        private readonly IBackgroundJobClient _backgroundJobClient;
         private readonly IRecurringJobManager _recurringJobManager;
 
-        public OrderController(IOrderServices orderServices, IRecurringJobManager recurringJobManager)
+        public OrderController(IOrderServices orderServices, IRecurringJobManager recurringJobManager, IBackgroundJobClient backgroundJobClient)
         {
             _orderServices = orderServices;
             _recurringJobManager = recurringJobManager;
+            _backgroundJobClient = backgroundJobClient;
         }
 
         [HttpGet("GetOrders")]
@@ -50,10 +51,11 @@ namespace OrderManagement.Controllers
         }
 
         [HttpPost("/ReccurringJob")]
-        public ActionResult CreateReccurringJob()
+        public async Task<ActionResult> CreateReccurringJob()
         {
-            _recurringJobManager.AddOrUpdate("JobId", () => _orderServices.UpdateOrderPriorities(), Cron.MinuteInterval(5));
-            _recurringJobManager.AddOrUpdate("JobId", () => _orderServices.ProcessPendingOrders(), Cron.MinuteInterval(5));
+            _recurringJobManager.AddOrUpdate("JobId", () => _orderServices.UpdateOrderPriorities(), Cron.MinuteInterval(1));
+            _recurringJobManager.AddOrUpdate("Job2Id", () => _orderServices.ProcessPendingOrders(), Cron.MinuteInterval(1));
+            
             return Ok();
         }
     }
