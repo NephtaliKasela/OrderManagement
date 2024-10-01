@@ -151,60 +151,63 @@ namespace OrderManagement.Services.OrderServices
                 .OrderByDescending(x => x.Priority)
                 .ToListAsync();
 
-            var currencies = GetLatestCurrencies();
-            // Parse the JSON
-            var jsonObject = JObject.Parse(currencies);
-            var data = jsonObject["data"] as JObject;
-
-            // Extract code and value
-            foreach (var item in data)
+            if(pendingOrders.Any())
             {
-                var code = item.Value["code"].ToString();
-                var value = item.Value["value"].ToString();
-                Console.WriteLine($"Code: {code}, Value: {value}");
+                var currencies = GetLatestCurrencies();
+                // Parse the JSON
+                var jsonObject = JObject.Parse(currencies);
+                var data = jsonObject["data"] as JObject;
 
-                try
+                // Extract code and value
+                foreach (var item in data)
                 {
-                    decimal decimalValue = Decimal.Parse(value);
-                    _currencies.Add(code, Convert.ToDecimal(value));
-                }
-                catch
-                {
-                    continue;
-                }
-            }
+                    var code = item.Value["code"].ToString();
+                    var value = item.Value["value"].ToString();
+                    Console.WriteLine($"Code: {code}, Value: {value}");
 
-            foreach (var order in pendingOrders)
-            {
-                // Update order status to Processing or leave as Pending if an error occurs
-                order.Status = OrderStatus.Processing.ToString();
-                await _context.SaveChangesAsync();
-
-                bool flag = false;
-
-                //Since USD is set as a default base currency, all exchange rates are relative to USD.
-                // Check exchange rate and convert TotalAmount to TotalAmountInBaseCurrency
-
-                foreach (var item in _currencies)
-                {
-                    Console.WriteLine(item);
-                    if (order.Currency.ToLower() == item.Key.ToLower())
+                    try
                     {
-                        order.TotalAmountInBaseCurrency = order.TotalAmount * item.Value;
-
-                        order.Status = OrderStatus.Completed.ToString();
-                        await _context.SaveChangesAsync();
-                        flag = true;
-
-                        SendMessage(order);
+                        decimal decimalValue = Decimal.Parse(value);
+                        _currencies.Add(code, Convert.ToDecimal(value));
                     }
-                    if (flag) break;
+                    catch
+                    {
+                        continue;
+                    }
                 }
-                if (!flag)
+
+                foreach (var order in pendingOrders)
                 {
-                    // Update order status to Pending
-                    order.Status = OrderStatus.Pending.ToString();
+                    // Update order status to Processing or leave as Pending if an error occurs
+                    order.Status = OrderStatus.Processing.ToString();
                     await _context.SaveChangesAsync();
+
+                    bool flag = false;
+
+                    //Since USD is set as a default base currency, all exchange rates are relative to USD.
+                    // Check exchange rate and convert TotalAmount to TotalAmountInBaseCurrency
+
+                    foreach (var item in _currencies)
+                    {
+                        Console.WriteLine(item);
+                        if (order.Currency.ToLower() == item.Key.ToLower())
+                        {
+                            order.TotalAmountInBaseCurrency = order.TotalAmount * item.Value;
+
+                            order.Status = OrderStatus.Completed.ToString();
+                            await _context.SaveChangesAsync();
+                            flag = true;
+
+                            SendMessage(order);
+                        }
+                        if (flag) break;
+                    }
+                    if (!flag)
+                    {
+                        // Update order status to Pending
+                        order.Status = OrderStatus.Pending.ToString();
+                        await _context.SaveChangesAsync();
+                    }
                 }
             }
 
