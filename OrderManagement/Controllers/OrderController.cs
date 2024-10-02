@@ -44,7 +44,7 @@ namespace OrderManagement.Controllers
             return Ok(await _orderServices.AddOrder(newOrder));
         }
 
-        [HttpPost("/CancelOrder {id}")]
+        [HttpPut("/CancelOrder {id}")]
         public async Task<ActionResult<ServiceResponse<GetOrderDTO>>> CancelOrder(int id)
         {
             return Ok(await _orderServices.CancelOrder(id));
@@ -53,8 +53,8 @@ namespace OrderManagement.Controllers
         [HttpPost("/ReccurringJob")]
         public async Task<ActionResult> CreateReccurringJob()
         {
-            _recurringJobManager.AddOrUpdate("JobId", () => _orderServices.UpdateOrderPriorities(), Cron.MinuteInterval(1));
-            _recurringJobManager.AddOrUpdate("Job2Id", () => _orderServices.ProcessPendingOrders(), Cron.MinuteInterval(1));
+            _recurringJobManager.AddOrUpdate("JobId", () => _orderServices.UpdateOrderPriorities(), Cron.MinuteInterval(5));
+            _recurringJobManager.AddOrUpdate("Job2Id", () => _orderServices.ProcessPendingOrders(), Cron.MinuteInterval(5));
             
             return Ok();
         }
