@@ -232,7 +232,7 @@ namespace OrderManagement.Services.OrderServices
             string message = $"Current time: {DateTime.Now}\n" +
             $"Id: {order.Id}\n" +
             $"CustomerName: {order.CustomerName}\n" +
-            $"TotalAmount: {order.TotalAmount} {order.TotalAmount}\n" +
+            $"TotalAmount: {order.TotalAmount}\n" +
             $"TotalAmountInBaseCurrency: {order.TotalAmountInBaseCurrency} USD\n\n";
 
             string filePath = "Order_info.txt";

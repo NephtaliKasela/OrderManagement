@@ -50,7 +50,7 @@ namespace OrderManagement.Controllers
             return Ok(await _orderServices.CancelOrder(id));
         }
 
-        [HttpPost("/ReccurringJob")]
+        [HttpPut("/ReccurringJob")]
         public async Task<ActionResult> CreateReccurringJob()
         {
             _recurringJobManager.AddOrUpdate("JobId", () => _orderServices.UpdateOrderPriorities(), Cron.MinuteInterval(5));
